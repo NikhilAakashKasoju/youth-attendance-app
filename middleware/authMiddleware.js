@@ -1,12 +1,11 @@
 // backend/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
-const User = require('../models/User.js');
+const Admin = require('../models/Admin'); // Correct path to Admin model
 
 const protect = asyncHandler(async (req, res, next) => {
   let token;
 
-  // Check for the token in the Authorization header (e.g., 'Bearer <token>')
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
@@ -18,11 +17,9 @@ const protect = asyncHandler(async (req, res, next) => {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Get user from the token's ID and attach it to the request object
-      // We don't want the password, so we use .select('-password')
-      req.user = await User.findById(decoded.id).select('-password');
-      
-      next(); // Move on to the next piece of middleware or the route handler
+      // Attach admin to the request object (excluding password)
+      req.admin = await Admin.findById(decoded.id).select('-password');
+      next();
     } catch (error) {
       console.error(error);
       res.status(401);
