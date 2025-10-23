@@ -1,86 +1,54 @@
 // backend/models/User.js
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const userSchema = mongoose.Schema(
   {
-    firstName: {
-      type: String,
-      required: [true, 'First Name is required'],
-    },
-    lastName: {
-      type: String,
-      required: [true, 'Last Name is required'],
-    },
-    userId: {
-      type: String,
-      required: [true, 'ID is required'],
-      minlength: 3, // Minimal length for N/A or actual ID
-      maxlength: 9, // Max length for actual ID
-      unique: true, // Ensuring userId is unique
-    },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    userId: { type: String, required: true, unique: true },
     phoneNumber: {
       type: String,
-      required: [true, 'Phone Number is required'],
+      required: true,
+      unique: true,
       match: [/^\d{10}$/, 'Please fill a valid 10 digit phone number'],
-      unique: true, // Ensuring phone number is unique
     },
     whatsappNumber: {
       type: String,
-      required: [true, 'Whatsapp Number is required'],
+      required: true,
       match: [/^\d{10}$/, 'Please fill a valid 10 digit whatsapp number'],
     },
-    address: {
-      type: String,
-      required: [true, 'Address is required'],
-    },
-    center: {
-      type: String,
-      required: [true, 'Center is required'],
-    },
-    district: {
-      type: String,
-      required: [true, 'District is required'],
-    },
-    mandal: {
-      type: String,
-      required: [true, 'Mandal is required'],
-    },
-    village: {
-      type: String,
-      required: [true, 'Village is required'],
-    },
-    dob: {
-      type: Date,
-      required: [true, 'Date of Birth is required'],
-    },
-    age: {
-      type: Number,
-      required: [true, 'Age is required'],
-      min: [1, 'Age must be at least 1'],
-      max: [36, 'Age cannot exceed 36 years'],
-    },
-    occupation: {
-      type: String,
-      enum: ['Student', 'Working Professional', 'Other'],
-      required: [true, 'Occupation is required'],
-    },
-    occupationDetails: {
-      type: String,
-    },
-    isPreceptor: {
-      type: Boolean,
-      default: false,
-    },
-    gender: {
-      type: String,
-      enum: ['Male', 'Female', 'Other'],
-      required: [true, 'Gender is required'],
-    },
+    address: { type: String, required: true },
+    center: { type: String, required: true },
+    district: { type: String, required: true },
+    mandal: { type: String, required: true },
+    village: { type: String, required: true },
+    dob: { type: Date, required: true },
+    age: { type: Number, required: true, max: 36 },
+    occupation: { type: String, required: true },
+    occupationDetails: { type: String },
+    isPreceptor: { type: Boolean, default: false },
+    gender: { type: String, required: true },
+    password: { type: String, required: true }, // Added password field back
   },
   {
     timestamps: true,
   }
 );
+
+// Pre-save hook to hash the password before saving
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    next();
+  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
+
+// Method to compare entered password with hashed password
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
 
 const User = mongoose.model('User', userSchema);
 

@@ -61,11 +61,11 @@ router.post(
       res.status(201).json({
         message: 'User registered successfully!',
         user: {
-            _id: user._id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            userId: user.userId,
-            phoneNumber: user.phoneNumber,
+          _id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          userId: user.userId,
+          phoneNumber: user.phoneNumber,
         }
       });
     } else {
